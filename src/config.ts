@@ -1,11 +1,13 @@
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 
-dotenv.config({ quiet: true });
+const projectRoot = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
+dotenv.config({ path: path.join(projectRoot, ".env"), quiet: true });
 
 export const config = {
-  materialsRoot: path.resolve(process.env.MATERIALS_ROOT ?? "./Cadeiras"),
-  indexPath: path.resolve(".mcp-index", "index.json"),
+  materialsRoot: path.resolve(projectRoot, process.env.MATERIALS_ROOT ?? "./Cadeiras"),
+  indexPath: path.join(projectRoot, ".mcp-index", "index.json"),
   googleDriveEnabled: (process.env.GOOGLE_DRIVE_ENABLED ?? "false").toLowerCase() === "true",
   googleDriveFolderId: process.env.GOOGLE_DRIVE_FOLDER_ID,
   chunkSize: 1200,
