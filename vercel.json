@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/mcp", "destination": "/api/mcp" },
+    { "source": "/health", "destination": "/api/health" }
+  ],
+  "functions": {
+    "api/mcp.ts": {
+      "includeFiles": ".mcp-index/index.json",
+      "maxDuration": 30
+    }
+  }
+}

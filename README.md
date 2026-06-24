@@ -167,6 +167,94 @@ Estatistica > Capitulo 1 > slides.pdf > página 12
 
 Se a pesquisa não encontrar termos do enunciado, peça ao agente para chamar `list_course_materials` e depois `read_material` no ficheiro ou página relevante.
 
+## Publicar lectureHub na Vercel
+
+O projeto também expõe uma landing page da marca `lectureHub` e um endpoint MCP HTTP:
+
+- Landing: `/`
+- Health check: `/health`
+- MCP Streamable HTTP: `/mcp`
+
+Antes de publicar, reconstrua o índice:
+
+```bash
+npm run index
+```
+
+O deploy inclui `.mcp-index/index.json`, mas não inclui a pasta `Cadeiras/`. Isto reduz tamanho e evita subir os ficheiros originais; o índice contém o texto extraído, por isso continua a ser conteúdo privado.
+
+### Segurança do endpoint `/mcp`
+
+Por defeito, `/mcp` fica bloqueado em produção se não configurar uma destas opções:
+
+```bash
+MCP_ACCESS_TOKEN=<token-longo-aleatorio>
+```
+
+ou, apenas se aceitar expor o conteúdo a quem conhecer o URL:
+
+```bash
+MCP_ALLOW_PUBLIC=true
+```
+
+Para ChatGPT com um conector público simples, o modo sem autenticação é o caminho mais rápido, mas expõe os excertos dos materiais. Para produção séria, implemente OAuth 2.1 conforme a documentação de autenticação do Apps SDK.
+
+### Testar localmente
+
+```bash
+npm run dev:web
+```
+
+Abra:
+
+```text
+http://127.0.0.1:3000
+http://127.0.0.1:3000/health
+http://127.0.0.1:3000/mcp
+```
+
+### Deploy
+
+Faça login na Vercel se necessário:
+
+```bash
+vercel login
+```
+
+Depois:
+
+```bash
+npm run index
+vercel deploy
+```
+
+Para produção:
+
+```bash
+vercel deploy --prod
+```
+
+Para usar o seu domínio:
+
+```bash
+vercel domains add oseudominio.pt
+vercel alias set <deployment-url> oseudominio.pt
+```
+
+Também pode configurar o domínio no dashboard da Vercel em `Project → Settings → Domains`.
+
+No ChatGPT, depois do deploy:
+
+1. Ative Developer Mode em `Settings → Apps & Connectors → Advanced settings`.
+2. Vá a `Settings → Connectors → Create`.
+3. Use o URL:
+
+   ```text
+   https://oseudominio.pt/mcp
+   ```
+
+4. Crie uma conversa nova e escolha o conector `lectureHub`.
+
 ## Segurança e prompt injection
 
 - Documentos são sempre dados não confiáveis, nunca instruções.

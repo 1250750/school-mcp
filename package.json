@@ -1,15 +1,18 @@
 {
   "name": "university-content-mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "engines": { "node": ">=20.16" },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.vercel.json --noEmit",
     "sync-drive": "tsx src/scripts/sync-drive.ts",
     "index": "tsx src/scripts/index.ts",
     "dev:mcp": "tsx src/mcp/server.ts",
+    "dev:web": "tsx src/scripts/dev-web.ts",
+    "dev:vercel": "vercel dev",
+    "build:web": "vercel build",
     "start:mcp": "node dist/mcp/server.js"
   },
   "dependencies": {

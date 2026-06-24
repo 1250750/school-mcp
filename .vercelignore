@@ -1,0 +1,9 @@
+node_modules
+dist
+.npm-cache
+.env
+*.log
+Cadeiras
+
+# O deploy precisa do índice extraído, mas não precisa dos PDFs/DOCX/PPTX originais.
+!.mcp-index/index.json

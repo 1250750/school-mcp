@@ -5,3 +5,5 @@ dist/
 .mcp-index/
 Cadeiras/
 *.log
+
+.vercel
