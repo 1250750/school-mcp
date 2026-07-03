@@ -5,15 +5,16 @@
   "type": "module",
   "engines": { "node": ">=20.16" },
   "scripts": {
-    "prebuild": "tsx src/scripts/prepare-vercel-index.ts",
+    "prepare:vercel-index": "tsx src/scripts/prepare-vercel-index.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.vercel.json --noEmit",
     "sync-drive": "tsx src/scripts/sync-drive.ts",
     "index": "tsx src/scripts/index.ts",
+    "deploy:prod": "npm run index && npm run prepare:vercel-index && vercel build --prod && vercel deploy --prebuilt --prod",
     "dev:mcp": "tsx src/mcp/server.ts",
     "dev:web": "tsx src/scripts/dev-web.ts",
     "dev:vercel": "vercel dev",
-    "build:web": "vercel build",
+    "build:web": "npm run prepare:vercel-index && vercel build",
     "start:mcp": "node dist/mcp/server.js"
   },
   "dependencies": {
