@@ -7,7 +7,7 @@
   ],
   "functions": {
     "api/mcp.ts": {
-      "includeFiles": ".mcp-index/index.json",
+      "includeFiles": "src/mcp-index/index.json",
       "maxDuration": 30
     }
   }

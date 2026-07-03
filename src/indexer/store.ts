@@ -8,7 +8,9 @@ let cached: { filePath: string; modified: number; index: LocalIndex } | undefine
 async function findIndexPath(): Promise<{ filePath: string; modified: number }> {
   const candidates = [...new Set([
     config.indexPath,
+    path.resolve(process.cwd(), "src", "mcp-index", "index.json"),
     path.resolve(process.cwd(), ".mcp-index", "index.json"),
+    path.resolve("/var/task", "src", "mcp-index", "index.json"),
     path.resolve("/var/task", ".mcp-index", "index.json"),
   ])];
   for (const filePath of candidates) {
