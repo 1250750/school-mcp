@@ -12,12 +12,25 @@ const { default: mcpHandler } = await import("../../api/mcp.js");
 const { default: healthHandler } = await import("../../api/health.js");
 const port = Number(process.env.PORT ?? 3000);
 
-async function body(request: IncomingMessage): Promise<ArrayBuffer | undefined> {
+type LocalVercelRequest = {
+  body?: unknown;
+  headers: Record<string, string | string[] | undefined>;
+  method?: string;
+  url?: string;
+};
+
+type LocalVercelResponse = {
+  end: (body?: Buffer | string) => void;
+  json: (body: unknown) => void;
+  setHeader: (name: string, value: string | string[]) => void;
+  status: (code: number) => LocalVercelResponse;
+};
+
+async function body(request: IncomingMessage): Promise<Buffer | undefined> {
   if (request.method === "GET" || request.method === "HEAD") return undefined;
   const chunks: Buffer[] = [];
   for await (const chunk of request) chunks.push(Buffer.from(chunk));
-  const joined = Buffer.concat(chunks);
-  return joined.buffer.slice(joined.byteOffset, joined.byteOffset + joined.byteLength) as ArrayBuffer;
+  return Buffer.concat(chunks);
 }
 
 async function send(response: ServerResponse, webResponse: Response): Promise<void> {
@@ -25,6 +38,40 @@ async function send(response: ServerResponse, webResponse: Response): Promise<vo
   webResponse.headers.forEach((value, key) => response.setHeader(key, value));
   if (!webResponse.body) return void response.end();
   Readable.fromWeb(webResponse.body as import("node:stream/web").ReadableStream).pipe(response);
+}
+
+async function runVercelHandler(
+  handler: (request: LocalVercelRequest, response: LocalVercelResponse) => unknown,
+  request: IncomingMessage,
+): Promise<Response> {
+  let statusCode = 200;
+  let responseBody: Buffer | string | undefined;
+  const headers = new Headers();
+  const localResponse: LocalVercelResponse = {
+    end(bodyValue?: Buffer | string) {
+      responseBody = bodyValue;
+    },
+    json(bodyValue: unknown) {
+      headers.set("Content-Type", "application/json; charset=utf-8");
+      responseBody = JSON.stringify(bodyValue);
+    },
+    setHeader(name: string, value: string | string[]) {
+      headers.set(name, Array.isArray(value) ? value.join(", ") : value);
+    },
+    status(code: number) {
+      statusCode = code;
+      return localResponse;
+    },
+  };
+
+  await handler({
+    body: await body(request),
+    headers: request.headers,
+    method: request.method,
+    url: request.url,
+  }, localResponse);
+
+  return new Response(responseBody, { status: statusCode, headers });
 }
 
 const staticFiles: Record<string, { file: string; type: string }> = {
@@ -37,14 +84,9 @@ createServer(async (request, response) => {
   try {
     const url = new URL(request.url ?? "/", `http://${request.headers.host ?? `127.0.0.1:${port}`}`);
     if (url.pathname === "/mcp") {
-      const webRequest = new Request(url, {
-        method: request.method,
-        headers: request.headers as HeadersInit,
-        body: await body(request),
-      });
-      return await send(response, await mcpHandler(webRequest));
+      return await send(response, await runVercelHandler(mcpHandler, request));
     }
-    if (url.pathname === "/health") return await send(response, healthHandler());
+    if (url.pathname === "/health") return await send(response, await runVercelHandler(healthHandler, request));
     const asset = staticFiles[url.pathname];
     if (!asset) return await send(response, new Response("Not found", { status: 404 }));
     return await send(response, new Response(await readFile(path.join(projectRoot, "public", asset.file)), {
