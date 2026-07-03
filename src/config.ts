@@ -1,7 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
-//oi
+
 const projectRoot = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 dotenv.config({ path: path.join(projectRoot, ".env"), quiet: true });
 
