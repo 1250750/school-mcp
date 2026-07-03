@@ -3,7 +3,6 @@ dist/
 .env
 .npm-cache/
 .mcp-index/
-src/mcp-index/
 Cadeiras/
 *.log
 
